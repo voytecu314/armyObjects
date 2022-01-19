@@ -1,21 +1,38 @@
-let obj1 = {label: 'one', soldiers: 0, soldiers_lost: 0, aim: 0, focus: 'two', recruited: undefined};
-let obj2 = {label: 'two', soldiers: 0, soldiers_lost: 0, aim: 0, focus: 'three', recruited: undefined};
-let obj3 = {label: 'three', soldiers: 0, soldiers_lost: 0, aim: 0, focus: 'one', recruited: undefined};
+let obj1 = {label: 'one', soldiers: 0, soldiers_lost: 0, aim: 0, focus: 'two', recruited: 0};
+let obj2 = {label: 'two', soldiers: 0, soldiers_lost: 0, aim: 0, focus: 'three', recruited: 0};
+let obj3 = {label: 'three', soldiers: 0, soldiers_lost: 0, aim: 0, focus: 'one', recruited: 0};
 
 obj1.soldiers = Math.ceil(Math.random()*100)+50;
 obj2.soldiers = Math.ceil(Math.random()*100)+50;
 obj3.soldiers = Math.ceil(Math.random()*100)+50;
 
+let obj1Powers = [Math.round(Math.random()*6),Math.round(Math.random()*6),Math.round(Math.random()*6)];
+let obj2Powers = [Math.round(Math.random()*6),Math.round(Math.random()*6),Math.round(Math.random()*6)];
+let obj3Powers = [Math.round(Math.random()*6),Math.round(Math.random()*6),Math.round(Math.random()*6)];
+
+let obj1PowerUnit;
+let obj2PowerUnit;
+let obj3PowerUnit;
+
 function fc () {
     let soldiers1_tmp = obj1.soldiers, soldiers2_tmp = obj2.soldiers, soldiers3_tmp = obj3.soldiers;
 
-    obj1Power = Math.ceil(Math.random()*5);
-    obj2Power = Math.ceil(Math.random()*5);
-    obj3Power = Math.ceil(Math.random()*5);
+    obj1PowerUnit = Math.round(obj1Powers.reduce((acc,val)=>(acc+val)/2));
+    obj2PowerUnit = Math.round(obj2Powers.reduce((acc,val)=>(acc+val)/2));
+    obj3PowerUnit = Math.round(obj3Powers.reduce((acc,val)=>(acc+val)/2));
 
-    obj1.aim = (obj1.aim+obj1Power/100);
-    obj2.aim = (obj2.aim+obj2Power/100);
-    obj3.aim = (obj3.aim+obj3Power/100);
+    obj1.power = obj1PowerUnit;
+    obj2.power = obj2PowerUnit;
+    obj3.power = obj3PowerUnit;
+
+
+    obj1Powers.push(Math.round(Math.random()*6));
+    obj2Powers.push(Math.round(Math.random()*6));
+    obj3Powers.push(Math.round(Math.random()*6));
+
+    obj1.aim +=obj1PowerUnit/100;
+    obj2.aim +=obj2PowerUnit/100;
+    obj3.aim +=obj3PowerUnit/100;
 
     obj1.focus= (obj2.soldiers*obj2.aim>obj3.soldiers*obj3.aim)?'two':(obj2.soldiers*obj2.aim<obj3.soldiers*obj3.aim)?'three':obj1.focus;
 
@@ -39,12 +56,18 @@ function fc () {
     obj3.soldiers_lost = soldiers3_tmp-obj3.soldiers; 
 
     recruitment(obj1); recruitment(obj2); recruitment(obj3);
+    
     console.table({obj1,obj2,obj3});
+    
+    obj1.aim -=(2*obj1.recruited/100)*obj1.aim;
+    obj2.aim -=(2*obj2.recruited/100)*obj2.aim;
+    obj3.aim -=(2*obj3.recruited/100)*obj3.aim;
+    
     checkArmy(obj1); checkArmy(obj2); checkArmy(obj3);
 }
 
 const recruitment = (object) => {
-    object.recruited=Math.round(object.aim*10)+Math.round(Math.random()*10);
+    object.recruited=Math.round(object.aim*10)+Math.round(Math.random()*(10));
     object.soldiers+=object.recruited;
 }
 
@@ -56,5 +79,5 @@ const checkArmy = (object) => {
     }
 
 console.table({obj1,obj2,obj3});
-const zeit = setInterval( fc ,4000 );
+const zeit = setInterval( fc ,5000 );
 
