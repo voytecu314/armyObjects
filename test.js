@@ -5,8 +5,9 @@ class Army {
     static instances = 0;
 
     constructor() {
-        Army.instances++;
         this.name = `Army ${Army.instances}`;
+        this.instance_no = Army.instances;
+        Army.instances++;
     }
 
     structure_strength = 1;
@@ -59,33 +60,35 @@ class Army {
     }
 
     setFocus() {
-        let myPosition = corespondingPositionsIn1D.indexOf(armies.indexOf(this));
-        let neighbours = [corespondingPositionsIn1D[myPosition-1],corespondingPositionsIn1D[myPosition+1]]; 
+        let myPosition = allPositions.indexOf(this.instance_no);
+        console.log(`Ìs this ${allPositions[myPosition]===this.instance_no} ?`);
+        let neighbours = [allPositions[myPosition-1],allPositions[myPosition+1]]; 
         let [left,right] = neighbours;
         if(left===undefined || right===undefined){
             this.focus = left===undefined?right:left;
         } 
         else {
             this.focus = Math.round(Math.random())?(
-                (armies[left].power_range>armies[right].power_range)?left:right
+                (everyArmy[left].power_range>everyArmy[right].power_range)?left:right
             ):
-                (armies[left].soldiers.regular>armies[right].soldiers.regular)?left:right
+                (everyArmy[left].soldiers.regular>everyArmy[right].soldiers.regular)?left:right
         } 
+        console.log('FOCUS? '+this.focus+ 'left:'+left+', right:'+right+'-- MY POS: ___'+myPosition);
        
     }
 
     shoot() {
        
         const getMgmHeads = (who,chance) => {
-            
-            if(armies[this.focus].soldiers[who]){
-                armies[this.focus].soldiers[who] = Math.floor(Math.random()*chance)?armies[this.focus].soldiers[who]:who==='sergeants'?armies[this.focus].soldiers[who]-Math.floor(Math.random()*Math.round(armies[this.focus].soldiers[who]/10)):armies[this.focus].soldiers[who]-1;
-                if(!armies[this.focus].soldiers[who]){
+            console.log('FOKUS ERR__ '+this.focus);
+            if(everyArmy[this.focus].soldiers[who]){
+                everyArmy[this.focus].soldiers[who] = Math.floor(Math.random()*chance)?everyArmy[this.focus].soldiers[who]:who==='sergeants'?everyArmy[this.focus].soldiers[who]-Math.floor(Math.random()*Math.round(everyArmy[this.focus].soldiers[who]/10)):everyArmy[this.focus].soldiers[who]-1;
+                if(!everyArmy[this.focus].soldiers[who]){
                     console.log(`Army ${this.focus} have no more ${who}!!!`);
                    
                         // if(who === 'general') {
 
-                        //     if(this.soldiers.majors >= armies[this.focus].soldiers.majors){}
+                        //     if(this.soldiers.majors >= everyArmy[this.focus].soldiers.majors){}
 
                         // } else return false;
                         //try to submit? if(trySubmit()) {Submit()};
@@ -100,16 +103,22 @@ class Army {
         getMgmHeads('lieutenants',10);
         getMgmHeads('sergeants',1);
 
-        if(armies[this.focus].soldiers.regular > this.power_range){ 
-            armies[this.focus].soldiers.regular -= this.power_range;
-            armies[this.focus].bodies_aftermath.sld_lost = this.power_range;
+        if(everyArmy[this.focus].soldiers.regular > this.power_range){ 
+            everyArmy[this.focus].soldiers.regular -= this.power_range;
+            everyArmy[this.focus].bodies_aftermath.sld_lost = this.power_range;
+            return 0;
         } 
         else {
-            armies[this.focus].bodies_aftermath.sld_lost = armies[this.focus].soldiers.regular;
-            armies[this.focus].soldiers.regular=0;
-            console.log(`${armies[this.focus].name} LOST`);
-            armies[this.focus].war_status = 'LOST';
-
+            everyArmy[this.focus].bodies_aftermath.sld_lost = everyArmy[this.focus].soldiers.regular;
+            everyArmy[this.focus].soldiers.regular=0;
+            console.log(`${everyArmy[this.focus].name} LOST`);
+            everyArmy[this.focus].war_status = 'LOST';
+            let [defeated_army] = everyArmy.splice(this.focus,1);
+            let [defeated_army_position] = allPositions.splice(allPositions.indexOf(this.focus),1);
+            defeated_army_position = undefined;
+            defeated.push(defeated_army);
+            defeatedPositions.push(defeated_army_position);
+            return this.focus>everyArmy.indexOf(this)?1:0;
         }
 
     }
@@ -173,43 +182,58 @@ class Army {
 }
 
 
-const armies = [], corespondingPositionsIn1D = [], defeated = [];
+const armies = [], corespondingPositionsIn1D = [], defeated = []; defeatedPositions = [];
 
 (function createArmies(amount){
     for(let i=0; i<amount; i++) {
         armies[i]=new Army();
-        corespondingPositionsIn1D[i]=i;
+        corespondingPositionsIn1D[i]=armies[i].instance_no;
     }
 })(5);
 
+    let everyArmy = defeated.concat(armies);
+    let allPositions = defeatedPositions.concat(corespondingPositionsIn1D);
+
 
 const war = () => { 
+
+    for(i=0; i<everyArmy.length;i++) {
+        console.log(`Army: | Sldrs: | Status: | Aim:            | Range: | Focus:`);
+        console.log(`${everyArmy[i].name} | ${everyArmy[i].soldiers.regular}: | ${everyArmy[i].war_status}: | ${everyArmy[i].aim}:            | ${everyArmy[i].power_range}: | ${everyArmy[i].focus}`);
+    }
     
     cnt++;
 
     corespondingPositionsIn1D.sort(() => (Math.random() > .5) ? 1 : -1).reverse();
     
-    for(let i=0; i<armies.length; i++) {
+    for(let i=defeated.length; i<everyArmy.length; i++) {
 
         
 
-        if(armies[i].war_status === 'READY') {
+        if(everyArmy[i].war_status === 'READY') {
 
-            armies[i].countPowerUnit();
-            armies[i].calcRange();
+            everyArmy[i].countPowerUnit();
+            everyArmy[i].calcRange();
             
-            armies[i].setFocus();
+            everyArmy[i].setFocus();
 
-            armies[i].shoot();
-            armies[i].promotions();
-            console.log(armies[i].aim, armies[i].soldiers.regular, armies[i].power_range);
-            armies[i].desertion();
-            armies[i].recruitment();
+            i += everyArmy[i].shoot();
 
-            armies[i].reCalcStructureStrength();
-            armies[i].addAim(); 
+            everyArmy = defeated.concat(armies);
+            allPositions = defeatedPositions.concat(corespondingPositionsIn1D);
 
-            armies[i].reShiftPowerFactors();
+            everyArmy[i].promotions();
+
+            if(everyArmy.length==1) {console.log(everyArmy[i].name + 'WON THE WAR'); break}
+            
+            console.log(everyArmy[i].aim, everyArmy[i].soldiers.regular, everyArmy[i].power_range);
+            everyArmy[i].desertion();
+            everyArmy[i].recruitment();
+
+            everyArmy[i].reCalcStructureStrength();
+            everyArmy[i].addAim(); 
+
+            everyArmy[i].reShiftPowerFactors();
 
         }
 
