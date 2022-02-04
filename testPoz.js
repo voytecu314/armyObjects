@@ -188,7 +188,8 @@ let randPos = [];
 
 
 const war = () => {
-    let table = document.getElementById('table');
+    
+    let table_hd = document.getElementById('table_header');
 
     // for(i=0; i<armies.length;i++) {
     //     console.log(`Army: | Sldrs: | Status: | Aim:            | Range: | Focus:`);
@@ -211,7 +212,7 @@ const war = () => {
         armies[i].calcRange();
         armies[i].setFocus();
 
-        let html = `
+        let table_html = `
         <tr>
         
             <th>${armies[i].name}</th>
@@ -226,7 +227,7 @@ const war = () => {
         
         </tr>`;
 
-        table.innerHTML += html;
+        table_hd.insertAdjacentHTML('afterend',table_html);
     }
 
 
@@ -251,6 +252,7 @@ const war = () => {
         // console.log(armies[i]);
 
     }
+    table_hd.insertAdjacentHTML('afterend',`<tr colspan="11"  class="rounds_cnt">ROUND ${cnt}<tr/>`);
 
 }
 
