@@ -55,7 +55,7 @@ class Army {
     }
 
     addAim() {
-        if (this.aim <= 0.15) {
+        if (this.aim <= 0.15 || !this.aim) {
             this.aim = this.aim * this.structure_strength;
             this.aim += this.pwr_unit / 1000;
             this.aim += Math.round(this.aim * 1000) / 1000; //why??
@@ -110,9 +110,9 @@ class Army {
         else {
             armies[this.focus].bodies_aftermath.sld_lost = armies[this.focus].soldiers.regular;
             armies[this.focus].soldiers.regular = 0;
-            console.log(`${armies[this.focus].name} LOST`);
             armies[this.focus].war_status = 'LOST';
-
+            armies[this.focus].aim = 0;
+            armies[this.focus].power_range = 0;
         }
 
     }
