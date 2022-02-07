@@ -73,8 +73,8 @@ class Army {
         if (neighboursIndexes.length == 1) this.focus = armies[neighboursIndexes[0]].instance_no;
         else {
             this.focus = Math.round(Math.random()) ?
-                ((armies[neighboursIndexes[0]].power_range > armies[neighboursIndexes[1]].power_range) ? neighboursIndexes[0] : neighboursIndexes[1]) :
-                ((armies[neighboursIndexes[0]].soldiers.regular > armies[neighboursIndexes[1]].soldiers.regular) ? neighboursIndexes[0] : neighboursIndexes[1])
+                ((armies[neighboursIndexes[0]].power_range > armies[neighboursIndexes[1]].power_range) ? armies[neighboursIndexes[0]].instance_no : armies[neighboursIndexes[1]].instance_no) :
+                ((armies[neighboursIndexes[0]].soldiers.regular > armies[neighboursIndexes[1]].soldiers.regular) ? armies[neighboursIndexes[0]].instance_no : armies[neighboursIndexes[1]].instance_no)
         }
     }
 
@@ -220,7 +220,7 @@ const war = () => {
 
     for (let i = 0; i < armies.length; i++) {
 
-        if (armies[i].war_status === 'READY') {
+        if (armies[i].war_status === 'READY' && armies.length > 1) {
 
             armies[i].countPowerUnit();
             armies[i].calcRange();
