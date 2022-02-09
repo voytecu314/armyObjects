@@ -55,26 +55,27 @@ class Army {
     }
 
     addAim() {
-        if (this.aim <= 0.15 || !this.aim) {
+        if (this.aim <= 0.25 || !this.aim) {
             this.aim = this.aim * this.structure_strength;
             this.aim += this.pwr_unit / 1000;
-            this.aim += Math.round(this.aim * 1000) / 1000; //why??
+            // this.aim += Math.round(this.aim * 1000) / 1000; //why??
         }
     }
 
     setFocus() {
-        let neighbours = [];
+        let neighboursIndexes = [];
         for (const army of armies) {
             if (army.positionX == this.positionX + 1 || army.positionX == this.positionX - 1)
-                neighbours.push(army.instance_no);
+                neighboursIndexes.push(armies.indexOf(army));
+
         }
-        console.log(`${this.name} : ${neighbours}`);
-        if (neighbours.length == 1) this.focus = neighbours[0];
+
+        if (neighboursIndexes.length == 1) this.focus = armies[neighboursIndexes[0]].instance_no;
         else {
             this.focus = Math.round(Math.random()) ?
-                ((armies[neighbours[0]].power_range > armies[neighbours[1]].power_range) ? neighbours[0] : neighbours[1]) :
-                ((armies[neighbours[0]].soldiers.regular > armies[neighbours[1]].soldiers.regular) ? neighbours[0] : neighbours[1])
-        } console.log(this.focus);
+                ((armies[neighboursIndexes[0]].power_range > armies[neighboursIndexes[1]].power_range) ? neighboursIndexes[0] : neighboursIndexes[1]) :
+                ((armies[neighboursIndexes[0]].soldiers.regular > armies[neighboursIndexes[1]].soldiers.regular) ? neighboursIndexes[0] : neighboursIndexes[1])
+        }
     }
 
     shoot() {
@@ -103,16 +104,24 @@ class Army {
         // getMgmHeads('lieutenants',10);
         // getMgmHeads('sergeants',1);
 
-        if (armies[this.focus].soldiers.regular >= this.power_range) {
-            armies[this.focus].soldiers.regular -= this.power_range;
-            armies[this.focus].bodies_aftermath.sld_lost = this.power_range;
-        }
-        else {
-            armies[this.focus].bodies_aftermath.sld_lost = armies[this.focus].soldiers.regular;
-            armies[this.focus].soldiers.regular = 0;
-            armies[this.focus].war_status = 'LOST';
-            armies[this.focus].aim = 0;
-            armies[this.focus].power_range = 0;
+        for (let i = 0; i < armies.length; i++) {
+            if (armies[i].instance_no == this.focus) {
+                if (armies[i].soldiers.regular > this.power_range) {
+                    armies[i].soldiers.regular -= this.power_range;
+                    armies[i].bodies_aftermath.sld_lost = this.power_range;
+                }
+                else {
+                    armies[i].bodies_aftermath.sld_lost = armies[i].soldiers.regular;
+                    armies[i].soldiers.regular = 0;
+                    armies[i].war_status = 'LOST';
+                    armies[i].aim = 0;
+                    armies[i].power_range = 0;
+                    let tmp_inst_no = armies[i].instance_no;
+                    loosers.push(armies.splice(i, 1));
+                    console.log(loosers);
+                    if (this.instance_no > tmp_inst_no) return 0; 
+                }
+            }
         }
 
     }
@@ -178,23 +187,20 @@ class Army {
 
 const armies = [];
 let randPos = [];
+let loosers = [];
 
 (function createArmies(amount) {
     for (let i = 0; i < amount; i++) {
         armies[i] = new Army();
+        console.log(armies[i]);
     }
 })(5);
 
 
 
 const war = () => {
-    
-    let table_hd = document.getElementById('table_header');
 
-    // for(i=0; i<armies.length;i++) {
-    //     console.log(`Army: | Sldrs: | Status: | Aim:            | Range: | Focus:`);
-    //     console.log(`${armies[i].name} | ${armies[i].soldiers.regular}: | ${armies[i].war_status}: | ${armies[i].aim}:            | ${armies[i].power_range}: | ${armies[i].focus}`);
-    // }
+    let table_hd = document.getElementById('table_header');
 
     cnt++;
 
@@ -208,35 +214,40 @@ const war = () => {
 
     for (let i = 0; i < armies.length; i++) {
 
-        armies[i].countPowerUnit();
-        armies[i].calcRange();
-        armies[i].setFocus();
 
-        let table_html = `
-        <tr>
-        
-            <th>${armies[i].name}</th>
-            <td>${armies[i].soldiers.regular}</td>
-            <td>${armies[i].pwr_factors}</td>
-            <td>${armies[i].pwr_unit}</td>
-            <td>${armies[i].aim*100}%</td>
-            <td>${armies[i].power_range}</td>
-            <td>${armies[i].focus}</td>
-            <td>${armies[i].positionX}</td>
-            <td>${armies[i].war_status}</td>
-        
-        </tr>`;
-
-        table_hd.insertAdjacentHTML('afterend',table_html);
     }
 
+    let if_control = 0;
 
     for (let i = 0; i < armies.length; i++) {
 
         if (armies[i].war_status === 'READY') {
 
+            if_control++;
+
+            armies[i].countPowerUnit();
+            armies[i].calcRange();
+            armies[i].setFocus();
+
+            let table_html = `
+            <tr>
             
-            armies[i].shoot();
+                <th>${armies[i].name}</th>
+                <td>${armies[i].soldiers.regular}</td>
+                <td>${armies[i].bodies_aftermath.sld_lost}</td>
+                <td>${armies[i].pwr_factors}</td>
+                <td>${armies[i].pwr_unit}</td>
+                <td>${(armies[i].aim * 100).toFixed(2)}%</td>
+                <td>${armies[i].power_range}</td>
+                <td>${armies[i].focus}</td>
+                <td>${armies[i].positionX}</td>
+                <td>${armies[i].war_status}</td>
+            
+            </tr>`;
+
+            table_hd.insertAdjacentHTML('afterend', table_html);
+
+            if (armies[i].shoot() === 0) i = i - 1;
             // armies[i].promotions();
 
             // armies[i].desertion();
@@ -249,10 +260,12 @@ const war = () => {
 
         }
 
-        // console.log(armies[i]);
 
     }
-    table_hd.insertAdjacentHTML('afterend',`<tr colspan="11"  class="rounds_cnt">ROUND ${cnt}<tr/>`);
+
+    if (if_control == 1) { console.log('FINITO'); }
+
+    table_hd.insertAdjacentHTML('afterend', `<tr colspan="11"  class="rounds_cnt">ROUND ${cnt - 1}<tr/>`);
 
 }
 
