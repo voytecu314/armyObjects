@@ -69,8 +69,8 @@ class Army {
                 neighboursIndexes.push(armies.indexOf(army));
 
         }
-
-        if (neighboursIndexes.length == 1) this.focus = armies[neighboursIndexes[0]].instance_no;
+        if(!neighboursIndexes.length) this.focus = undefined; //why would it happened?
+        else if (neighboursIndexes.length == 1) this.focus = armies[neighboursIndexes[0]].instance_no;
         else {
             this.focus = Math.round(Math.random()) ?
                 ((armies[neighboursIndexes[0]].power_range > armies[neighboursIndexes[1]].power_range) ? armies[neighboursIndexes[0]].instance_no : armies[neighboursIndexes[1]].instance_no) :
@@ -194,7 +194,7 @@ let loosers = [];
         armies[i] = new Army();
         console.log(armies[i]);
     }
-})(5);
+})(30);
 
 
 
@@ -256,6 +256,10 @@ const war = () => {
 
             armies[i].reShiftPowerFactors();
 
+        } else {
+            console.log(armies[0].name+' won the war.');
+            console.log(armies);
+            clearInterval(rounds);
         }
 
     }
@@ -264,4 +268,4 @@ const war = () => {
 
 }
 
-war();
+const rounds = setInterval(war,1000);
