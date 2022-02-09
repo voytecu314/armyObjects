@@ -214,19 +214,11 @@ const war = () => {
 
     for (let i = 0; i < armies.length; i++) {
 
-
-    }
-
-
-    for (let i = 0; i < armies.length; i++) {
-
-        if (armies[i].war_status === 'READY' && armies.length > 1) {
-
             armies[i].countPowerUnit();
             armies[i].calcRange();
             armies[i].setFocus();
 
-            let table_html = `
+        let table_html = `
             <tr>
             
                 <th>${armies[i].name}</th>
@@ -243,6 +235,13 @@ const war = () => {
             </tr>`;
 
             table_hd.insertAdjacentHTML('afterend', table_html);
+
+    }
+
+
+    for (let i = 0; i < armies.length; i++) {
+
+        if (armies[i].war_status === 'READY' && armies.length > 1) {
 
             if (armies[i].shoot() === 0) i = i - 1;
 
@@ -268,4 +267,4 @@ const war = () => {
 
 }
 
-const rounds = setInterval(war,1000);
+// const rounds = setInterval(war,1000);
