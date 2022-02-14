@@ -24,6 +24,15 @@ function draw(armies) {
         ctx.fillStyle = "green";
         ctx.font = "7px Arial";
         ctx.fillText(`${armies[i].instance_no}`,armies[i].positionX*10-1, canvas.height-armies[i].soldiers.regular/10-4);
+        ctx.font = "14px Arial";
+        let focus_poz;
+        for(let j=0;j<armies.length;j++) {
+            if(armies[i].focus==armies[j].instance_no) {
+                focus_poz = armies[j].positionX;
+            }
+        }
+        let arrow = (armies[i].positionX<focus_poz)?'→':'←';
+        ctx.fillText(`${arrow}`,(arrow==='→')?armies[i].positionX*10:armies[i].positionX*10-10, canvas.height-armies[i].power_range/10);
     }
    
 }
